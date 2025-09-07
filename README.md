@@ -1,92 +1,154 @@
-## 🔹 What Is Hyperledger Fabric?
+# 🚀 **Hyperledger Fabric Asset Transfer Project Documentation**
 
-* **Blockchain framework** for building distributed ledger solutions.
-* **Permissioned network**: participants are known and verified.
-* **Modular architecture**: you can plug in different consensus algorithms, membership services, and data storage.
-* **Privacy & confidentiality**: supports private channels and chaincode (smart contracts) for selective data sharing.
-* **Smart contracts** are called **Chaincode** in Fabric, and they define business logic.
+This project demonstrates setting up a **Hyperledger Fabric test network** and running a simple **Asset Transfer API Server** using **Node.js** and **Go chaincode**.
 
 ---
 
-## 🔹 Key Components of Hyperledger Fabric
+## 📂 **Project Structure**
 
-1. **Peers**
-
-   * Nodes that maintain the ledger and execute smart contracts (chaincode).
-   * Types:
-
-     * **Endorsing peers**: simulate and endorse transactions.
-     * **Committing peers**: validate and commit blocks to the ledger.
-
-2. **Ordering Service (Orderers)**
-
-   * Responsible for transaction ordering and block creation.
-   * Ensures **consensus** in the network.
-
-3. **Membership Service Provider (MSP)**
-
-   * Provides identities using cryptographic certificates.
-   * Controls who can participate in the network.
-
-4. **Ledger**
-
-   * Stores all transactions in a **blockchain structure**.
-   * Also maintains a **world state database** (e.g., CouchDB, LevelDB) for quick data access.
-
-5. **Chaincode (Smart Contracts)**
-
-   * Defines the logic of transactions.
-   * Written in Go, Java, or Node.js.
-
-6. **Channels**
-
-   * Private sub-networks within the blockchain.
-   * Allow specific participants to transact confidentially.
+```
+HLF-Project-Asset-Transfer/
+├── fabric-samples/       # Hyperledger Fabric sample network
+│   └── test-network/     # Test network scripts
+├── api-server/           # Express.js server for Asset Transfer
+└── chaincode/            # Chaincode written in Go
+```
 
 ---
 
-## 🔹 How Hyperledger Fabric Works (Transaction Flow)
+## ⚙️ **Prerequisites**
 
-Let’s break down the process:
+Make sure the following are installed:
 
-1. **Proposal Submission**
-
-   * A client application sends a transaction proposal to **endorsing peers**.
-   * The proposal is not yet added to the ledger.
-
-2. **Endorsement**
-
-   * Endorsing peers simulate the transaction by executing the chaincode.
-   * They don’t update the ledger yet but return a **signed endorsement** response.
-
-3. **Transaction Ordering**
-
-   * The endorsed transaction proposal is sent to the **ordering service**.
-   * The ordering service collects multiple transactions, orders them, and creates a **block**.
-
-4. **Block Distribution**
-
-   * The block is broadcast to all peers in the network.
-
-5. **Validation & Commitment**
-
-   * Peers validate the endorsements and check policies.
-   * Valid transactions are written to the **ledger**.
-   * The **world state** (database) is updated.
+* Git
+* cURL / wget
+* Docker & Docker Compose
+* WSL2 (Ubuntu 22.04 recommended, if on Windows)
+* Node.js **>= 20.x** & npm
+* Go (for chaincode development)
 
 ---
 
-## 🔹 Advantages of Hyperledger Fabric
+## 🛠️ **Setup Instructions**
 
-* **Permissioned and secure**: identities are managed.
-* **Modular and flexible**: plug in different components.
-* **High performance**: supports thousands of TPS (transactions per second).
-* **Privacy**: channels allow selective sharing of data.
-* **Scalable**: suitable for enterprise-grade applications.
+### **1️⃣ Clone Fabric Samples and Install Binaries**
+
+```bash
+# location: HLF-Project-Asset-Transfer/
+git clone https://github.com/hyperledger/fabric-samples.git
+cd fabric-samples
+
+# install Fabric binaries
+curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s
+
+# add binaries to PATH
+export PATH=$PATH:$PWD/bin
+
+# verify installation
+peer version
+```
 
 ---
 
-✅ **In short:**
-Hyperledger Fabric is a **permissioned blockchain framework** that provides security, scalability, and privacy for enterprise applications. It works by **endorsing transactions**, **ordering them**, and then **committing them to the ledger** with controlled access.
+### **2️⃣ Start the Test Network**
+
+```bash
+cd test-network
+
+# bring up the network and create a channel
+./network.sh up createChannel -c mychannel -ca
+
+# deploy the chaincode
+./network.sh deployCC -ccn asset -ccp ../../chaincode -ccl go
+```
+
+✅ This creates a channel `mychannel` and deploys the `asset` chaincode.
 
 ---
+
+### **3️⃣ Verify Chaincode Commit**
+
+```bash
+peer lifecycle chaincode querycommitted --channelID mychannel --name asset
+```
+
+Expected output:
+
+```
+Committed chaincode definition for chaincode 'asset' on channel 'mychannel':
+Version: 1.0, Sequence: 1, Endorsement Plugin: escc, Validation Plugin: vscc,
+Approvals: [Org1MSP: true, Org2MSP: true]
+```
+
+---
+
+### **4️⃣ Run the API Server**
+
+```bash
+cd ../../api-server
+
+# clean existing installs if needed
+rm -rf node_modules package-lock.json
+
+# install dependencies
+npm install express @hyperledger/fabric-gateway @grpc/grpc-js
+
+# start the server
+node server.js
+```
+
+Expected output:
+
+```
+Connecting to Fabric network...
+Successfully connected to the smart contract.
+Server is running on http://localhost:3000
+```
+
+---
+
+### **5️⃣ Test the API**
+
+* **Get all assets**
+
+```bash
+curl http://localhost:3000/api/assets
+```
+
+* **Create asset**
+
+```bash
+curl -X POST http://localhost:3000/api/assets \
+-H "Content-Type: application/json" \
+-d '{"ID":"asset1","Color":"blue","Owner":"Alice","Size":10,"AppraisedValue":100}'
+```
+
+---
+
+### **6️⃣ Shut Down the Network**
+
+```bash
+cd ../fabric-samples/test-network
+./network.sh down
+```
+
+---
+
+## ⚡ **Common Problems & Solutions**
+
+| Problem                                                     | Solution                                                               |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `npm install` fails with UNC/EISDIR/ENOTEMPTY errors in WSL | Remove `node_modules` and `package-lock.json`, then reinstall packages |
+| Node.js version issues causing npm failures                 | Install **Node.js 20.x** from Nodesource instead of WSL default        |
+| `querycommitted` returns 404                                | Ensure chaincode is approved by all orgs and committed successfully    |
+| npm vulnerabilities (`jsrsasign`)                           | Run `npm audit fix`; use `--force` only if compatible                  |
+
+---
+
+## ✅ **Summary**
+
+* Fabric binaries & Docker containers set up using `install-fabric.sh`.
+* Test network launched with a single channel (`mychannel`).
+* Asset Transfer chaincode deployed successfully.
+* Node.js API server connected to Fabric Gateway and serving requests.
+
