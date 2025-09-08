@@ -35,8 +35,7 @@ Make sure the following are installed:
 
 ```bash
 # location: HLF-Project-Asset-Transfer/
-git clone https://github.com/hyperledger/fabric-samples.git
-cd fabric-samples
+git clone https://github.com/nazmulhasan77/Hyperledger-Fabric
 
 # install Fabric binaries
 curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s
@@ -53,7 +52,7 @@ peer version
 ### **2️⃣ Start the Test Network**
 
 ```bash
-cd test-network
+cd fabric-samples/test-network
 
 # bring up the network and create a channel
 ./network.sh up createChannel -c mychannel -ca
