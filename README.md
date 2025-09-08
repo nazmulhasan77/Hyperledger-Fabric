@@ -36,7 +36,6 @@ Make sure the following are installed:
 ```bash
 # location: HLF-Project-Asset-Transfer/
 git clone https://github.com/nazmulhasan77/Hyperledger-Fabric
-
 # install Fabric binaries
 curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s
 
@@ -55,9 +54,30 @@ peer version
 cd fabric-samples/test-network
 
 # bring up the network and create a channel
-./network.sh up createChannel -c mychannel -ca
+./network.sh up createChannel 
+```
+
+Solve Go version mismatch inside your chaincode project.
+Open the file in a text editor:
+
+```bash
+nano /home/nazmulhasan77/Hyperledger-Fabric/chaincode/go.mod
+```
+
+```go
+go 1.22.2
+```
+
+Change it to:
+
+```go
+go 1.22
+```
+
+Save the file and run. 
 
 # deploy the chaincode
+```bash
 ./network.sh deployCC -ccn asset -ccp ../../chaincode -ccl go
 ```
 
@@ -85,12 +105,6 @@ Approvals: [Org1MSP: true, Org2MSP: true]
 
 ```bash
 cd ../../api-server
-
-# clean existing installs if needed
-rm -rf node_modules package-lock.json
-
-# install dependencies
-npm install express @hyperledger/fabric-gateway @grpc/grpc-js
 
 # start the server
 node server.js

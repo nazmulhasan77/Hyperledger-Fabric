@@ -1,0 +1,74 @@
+Right now you tried to **execute** the file `go.mod` as if it were a program:
+
+```bash
+/home/nazmulhasan77/Hyperledger-Fabric/chaincode/go.mod
+```
+
+But `go.mod` is just a **text file**, not an executable, so Bash says:
+
+```
+Permission denied
+```
+
+---
+
+### ✅ What you should do instead
+
+You need to **open and edit** that file, not run it.
+
+1. Open the file in a text editor (use any one of these commands):
+
+```bash
+nano /home/nazmulhasan77/Hyperledger-Fabric/chaincode/go.mod
+```
+
+or
+
+```bash
+vi /home/nazmulhasan77/Hyperledger-Fabric/chaincode/go.mod
+```
+
+or if you’re in VS Code on WSL:
+
+```bash
+code /home/nazmulhasan77/Hyperledger-Fabric/chaincode/go.mod
+```
+
+---
+
+2. Find the line that looks like:
+
+```go
+go 1.22.2
+```
+
+Change it to:
+
+```go
+go 1.22
+```
+
+(or `go 1.23` if you installed Go 1.23 on your system).
+
+---
+
+3. Save the file and run:
+
+```bash
+cd /home/nazmulhasan77/Hyperledger-Fabric/chaincode
+go mod tidy
+go mod vendor
+```
+
+---
+
+👉 After that, retry deploying your chaincode:
+
+```bash
+cd ~/Hyperledger-Fabric/fabric-samples/test-network
+./network.sh deployCC -ccn asset -ccp ../../chaincode -ccl go
+```
+
+---
+
+Do you want me to give you the **exact content of a correct `go.mod` file for Fabric chaincode** so you can just copy-paste it and avoid version issues?

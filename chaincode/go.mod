@@ -1,6 +1,6 @@
 module github.com/chaincode
 
-go 1.22.2
+go 1.22
 
 require (
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20240704073638-9fb89180dc17
